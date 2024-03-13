@@ -32,7 +32,7 @@ const LoginForm = () => {
       });
 
       Auth.login(data.login.token);
-    } catch {
+    } catch (err) {
       console.error(err);
       setShowAlert(true);
     }
