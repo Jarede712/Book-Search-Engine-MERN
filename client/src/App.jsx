@@ -8,8 +8,6 @@ import {
 import { setContext } from '@apollo/client/link/context';
 import { Outlet } from 'react-router-dom';
 
-import SignupForm from './components/SignupForm';
-import LoginForm from './components/LoginForm';
 import Navbar from './components/Navbar';
 
 // Construct our main GraphQL API endpoint

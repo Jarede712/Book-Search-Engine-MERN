@@ -5,7 +5,6 @@ import { Container, Col, Form, Button, Card, Row } from 'react-bootstrap';
 import Auth from '../utils/auth';
 import { saveBookIds, getSavedBookIds } from '../utils/localStorage';
 import { SAVE_BOOK } from '../utils/mutations';
-import { searchGoogleBooks } from '../utils/queries';
 
 const SearchBooks = () => {
   // create state for holding returned google api data
@@ -23,6 +22,17 @@ const SearchBooks = () => {
 
   const [saveBook] = useMutation(SAVE_BOOK);
 
+  const searchGoogleBooks = async (query) => {
+    const response = await fetch(
+      `https://www.googleapis.com/books/v1/volumes?q=${query}`
+    );
+    if (!response.ok) {
+      throw new Error('something went wrong!');
+    }
+    const { items } = await response.json();
+    return items;
+  };
+
   // create method to search for books and set state on form submit
   const handleFormSubmit = async (event) => {
     event.preventDefault();
@@ -32,13 +42,7 @@ const SearchBooks = () => {
     }
 
     try {
-      const response = await searchGoogleBooks(searchInput);
-
-      if (!response.ok) {
-        throw new Error('something went wrong!');
-      }
-
-      const { items } = await response.json();
+      const items = await searchGoogleBooks(searchInput);
 
       const bookData = items.map((book) => ({
         bookId: book.id,
@@ -46,6 +50,7 @@ const SearchBooks = () => {
         title: book.volumeInfo.title,
         description: book.volumeInfo.description,
         image: book.volumeInfo.imageLinks?.thumbnail || '',
+        link: book.volumeInfo.previewLink || '', // Add this line
       }));
 
       setSearchedBooks(bookData);
@@ -55,7 +60,6 @@ const SearchBooks = () => {
     }
   };
 
-  // create function to handle saving a book to our database
   const handleSaveBook = async (bookId) => {
     // find the book in `searchedBooks` state by the matching id
     const bookToSave = searchedBooks.find((book) => book.bookId === bookId);
@@ -67,8 +71,10 @@ const SearchBooks = () => {
       return false;
     }
 
+    const bookData = { ...bookToSave };
+
     try {
-      await saveBook({ variables: { input: bookToSave } });
+      await saveBook({ variables: { input: bookData } });
 
       // if book successfully saves to user's account, save book id to state
       setSavedBookIds([...savedBookIds, bookToSave.bookId]);
