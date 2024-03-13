@@ -43,8 +43,6 @@ function App() {
         <Navbar />
         <div className="container">
           <Outlet />
-          <SignupForm />
-          <LoginForm />
         </div>
       </div>
     </ApolloProvider>
